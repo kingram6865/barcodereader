@@ -1,5 +1,14 @@
+# Barcodereader 
 
-# Welcome to your Expo app 👋
+This app scans a barcode and stores the scanned data in a database.
+As well, the user can input some data about the item being scanned. This option
+will be less useful when the best 3rd party API for the translating the UPC code to
+accurate data has been determined.
+
+The idea for this app derives from a personal need to track grocery purchases for budgeting.
+
+
+## Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
