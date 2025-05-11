@@ -1,3 +1,4 @@
+import { addFood } from "@/api/retail";
 import InputFormRetail, { FormValues } from "@/components/InputFormRetail";
 import { CameraView } from "expo-camera";
 import { useState } from 'react';
@@ -9,9 +10,7 @@ export default function Scan() {
   const [scanned, setScanned] = useState(false);
   const [showIsbnScanner, setShowIsbnScanner] = useState(false);
   const [showRetailScanner, setShowRetailScanner] = useState(false);
-  const [retailSource, setRetailSource] = useState("");
-  const [retailDescription, setRetailDescription] = useState("");
-  const [scannedData, setScannedData] = useState<Record<string, any> | null>(null);
+  // const [scannedData, setScannedData] = useState<Record<string, any> | null>(null);
 
   const { 
     control, handleSubmit, getValues, formState: { errors }, reset 
@@ -40,7 +39,10 @@ export default function Scan() {
   })
 
   const onSubmit = async (data: FormValues) => {
-    console.log(data);
+    // console.log(`payload: ${JSON.stringify(data, null, 2)}`);
+    const response = await addFood(data);
+    const result = await response.json();
+    console.log(`(scan.tsx Line 47): ${result}`);
     reset();
     setScanned(false);
   }
@@ -60,13 +62,9 @@ export default function Scan() {
 
   const handleRetailScan = async ({ type, data }: { type: string, data: string }) => {
     setShowRetailScanner(false);
-    // let parsedData: Record<string, any> | null = {type, data};
     const parsed = {type, data}
 
     alert(`Retail Bar code with type ${type} and UPC ${data} has been scanned!`);
-    // let retailScanResult = await addFood({...insertData, source: retailSource, description: retailDescription});
-    // console.log(retailScanResult);
-
     const values = getValues()
 
     setScanned(true);
