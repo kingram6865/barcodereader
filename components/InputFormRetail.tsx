@@ -21,7 +21,7 @@ export type FormValues = {
   pricedate: string;
   priceper: number;
   notes: string;
-  scannedData?: Record<string, any>;
+  // scannedData?: Record<string, any>;
 }
 
 type Props = {
