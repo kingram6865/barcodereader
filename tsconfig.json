@@ -6,7 +6,12 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "module": "esnext",
+    "target": "esnext",    
   },
   "include": [
     "**/*.ts",
