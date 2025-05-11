@@ -11,7 +11,7 @@ export async function getBooksByISBN(isbn: any) {
   }
 }
 
-export async function addToDatabase(data: Object) {
+export async function addToDatabase(data: object) {
   try {
     // console.log(`\x1b[32m(books.ts) [Line 10]: ${process.env.EXPO_PUBLIC_BACKEND_BASE_URI}/library/paper\x1b[0m`, data)
     let results = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URI}/library/paper`, data);
