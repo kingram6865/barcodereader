@@ -11,7 +11,7 @@ export default function Scan() {
   const [showRetailScanner, setShowRetailScanner] = useState(false);
   const [retailSource, setRetailSource] = useState("");
   const [retailDescription, setRetailDescription] = useState("");
-  const [data, setData] = useState({});
+  const [scannedData, setScannedData] = useState<Record<string, any> | null>(null);
 
   const { 
     control, handleSubmit, getValues, formState: { errors }, reset 
@@ -59,17 +59,9 @@ export default function Scan() {
   };
 
   const handleRetailScan = async ({ type, data }: { type: string, data: string }) => {
-
-    // setScanned(true);
     setShowRetailScanner(false);
-    let parsedData: Record<string, any> | null = {type, data};
-
-    // let insertData = {
-    //   codeType: type,
-    //   upcCode: data,
-    //   eanCode: "",
-    //   notes: "Added from Phone Scan."
-    // }
+    // let parsedData: Record<string, any> | null = {type, data};
+    const parsed = {type, data}
 
     alert(`Retail Bar code with type ${type} and UPC ${data} has been scanned!`);
     // let retailScanResult = await addFood({...insertData, source: retailSource, description: retailDescription});
@@ -80,7 +72,7 @@ export default function Scan() {
     setScanned(true);
     const payload = {
       ...values,
-      scannedData: parsedData
+      scannedData: parsed
     }
 
     handleSubmit(() => onSubmit(payload))();
