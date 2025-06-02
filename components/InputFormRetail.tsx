@@ -1,6 +1,6 @@
 import React from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
-import { ScrollView, StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export type FormValues = {
   source: string;
@@ -34,9 +34,10 @@ export default function InputFormRetail({ control, errors}: Props) {
     name: keyof FormValues;
     label: string;
     rules?: any;
-    keyboardType?: TextInputProps['keyboardType'];
+    keyboardType?: any;
     multiline?: boolean;
     placeholder?: string;
+    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
   }[] = [
     { name: 'source', label: 'Source', placeholder: 'Safeway, Lucky, etc.' },
     { name: 'producer', label: 'Producer', placeholder: 'Nabisco, Frito-Lay, etc.' },
