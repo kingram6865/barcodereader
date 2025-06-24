@@ -39,12 +39,17 @@ export default function Scan() {
   })
 
   const onSubmit = async (data: FormValues) => {
+    try {
     // console.log(`payload: ${JSON.stringify(data, null, 2)}`);
-    const response = await addFood(data);
-    const result = await response.json();
-    console.log(`(scan.tsx Line 47): ${result}`);
+    const result = await addFood(data);
+    // const result = await response.json();
+    console.log(`(scan.tsx Line 47): ${JSON.stringify(result)}`);
     reset();
     setScanned(false);
+    } catch (err) {
+      console.error('Submission failed:', err);
+      alert('Failed to submit data. Please try again.');
+    }
   }
 
 
@@ -62,7 +67,7 @@ export default function Scan() {
 
   const handleRetailScan = async ({ type, data }: { type: string, data: string }) => {
     setShowRetailScanner(false);
-    const parsed = {type, data}
+    const parsed = { type, data }
 
     alert(`Retail Bar code with type ${type} and UPC ${data} has been scanned!`);
     const values = getValues()
