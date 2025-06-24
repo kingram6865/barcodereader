@@ -2,21 +2,33 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@api/*": ["./api/*"],
+      "@components/*": ["./components/*"],
+      "@assets/*": ["./assets/*"]
     },
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "module": "esnext",
-    "target": "esnext",    
+    "target": "esnext",
+    "skipLibCheck": true,  // Added for better performance
+    "forceConsistentCasingInFileNames": true,  // Added for cross-platform consistency
+    "jsx": "preserve",  // Added for React/JSX support
+    "isolatedModules": true  // Important for Expo/React Native    
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+    "expo-env.d.ts",
+    "**/*.js",  // Added for JS files
+    "**/*.jsx"  // Added for JSX files    
+  ],
+  "exclude": [
+    "node_modules",  // Explicitly exclude node_modules
+    "dist"  // Exclude build directory
+  ]  
 }
