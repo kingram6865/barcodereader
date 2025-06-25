@@ -20,6 +20,7 @@ export default function Scan() {
       source: '',
       producer: '',
       brand: '',
+      itemname: '',
       description: '',
       qimperial: 0,
       qimperialmeasure: '',
@@ -70,10 +71,6 @@ export default function Scan() {
     alert(`Retail Bar code with type ${type} and UPC ${data} has been scanned!`);
     const values = getValues()
 
-    // setScanned(true);
-
-
-    // handleSubmit(() => onSubmit(payload))();
     try {
       const payload = {
         ...values,

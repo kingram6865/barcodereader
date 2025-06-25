@@ -1,4 +1,3 @@
-import React from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -6,6 +5,7 @@ export type FormValues = {
   source: string;
   producer: string;
   brand: string;
+  itemname: string,
   description: string;
   qimperial: number;
   qimperialmeasure: string;
@@ -42,7 +42,8 @@ export default function InputFormRetail({ control, errors }: Props) {
       { name: 'source', label: 'Source', placeholder: 'Safeway, Lucky, etc.', autoCapitalize: 'words' },
       { name: 'producer', label: 'Producer', placeholder: 'Nabisco, Frito-Lay, etc.', autoCapitalize: 'words' },
       { name: 'brand', label: 'Brand', placeholder: 'Ruffles, Fritos, etc.', autoCapitalize: 'words' },
-      { name: 'description', label: 'Description', autoCapitalize: 'words' },
+      { name: 'itemname', label: 'Item', placeholder: 'Cookies, Eggs, Milk', autoCapitalize: 'words' },
+      { name: 'description', label: 'Description', placeholder: 'Large, Lemon, assorted', autoCapitalize: 'words' },
       { name: 'qimperial', label: 'Quantity (Imperial)' },
       { name: 'qimperialmeasure', label: 'Measure (Imperial)', placeholder: 'oz, fl oz, etc.', autoCapitalize: 'none' },
       { name: 'qmetric', label: 'Quantity Metric', autoCapitalize: 'none' },
