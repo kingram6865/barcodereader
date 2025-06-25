@@ -1,5 +1,6 @@
 import { addFood } from "@/api/retail";
 import InputFormRetail, { FormValues } from "@/components/InputFormRetail";
+import { timeStamp } from "@/utilities/tools";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { CameraView } from "expo-camera";
@@ -53,9 +54,11 @@ export default function Scan() {
       if (netInfo.isConnected && netInfo.isInternetReachable) {
         try {
           const queue = await getSubmissionQueue();
+          setQueueCount(queue.length);
           if (queue.length > 0) {
             setIsRetrying(true);
             await processSubmissionQueue(queue);
+            setQueueCount(0);
           }
         } catch (err) {
           console.error('Error processing queue:', err);
@@ -122,7 +125,7 @@ export default function Scan() {
       }
 
       const result = await addFood(data);
-      console.log(`(scan.tsx Line 47): ${JSON.stringify(result)}`);
+      console.log(`(scan.tsx Line 127) ${timeStamp()}: ${JSON.stringify(result)}`);
       reset();
       setScanned(false);
       setCachedSubmission(null);
@@ -209,6 +212,29 @@ export default function Scan() {
       <Text style={styles.text}>Scan Info</Text>
       <View style={styles.formContainer}>
         <InputFormRetail control={control} errors={errors} />
+        {queueCount > 0 && (
+          <View style={styles.queueContainer}>
+            <Text style={styles.queueText}>
+              {queueCount} {queueCount === 1 ? 'item' : 'items'} waiting to sync
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={async () => {
+                try {
+                  const queue = await getSubmissionQueue();
+                  await processSubmissionQueue(queue)
+                } catch (err) {
+                  console.error('Error processing queue:', err);
+                }
+              }}
+              disabled={isRetrying}
+            >
+              <Text style={styles.retryText}>
+                {isRetrying ? 'Syncing...' : 'Sync Now'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         {submitError && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{submitError}</Text>
@@ -296,5 +322,20 @@ const styles = StyleSheet.create({
   retryText: {
     color: 'white',
     fontWeight: 'bold'
-  }
+  },
+  queueContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 15,
+    margin: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffeeba',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  queueText: {
+    color: '#856404',
+    flex: 1
+  },
 });
