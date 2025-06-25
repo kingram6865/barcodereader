@@ -1,18 +1,24 @@
 import { addFood } from "@/api/retail";
 import InputFormRetail, { FormValues } from "@/components/InputFormRetail";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNetInfo } from '@react-native-community/netinfo';
 import { CameraView } from "expo-camera";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const SUBMISSION_QUEUE_KEY = 'pending_food_submissions';
 
 export default function Scan() {
   const [cachedSubmission, setCachedSubmission] = useState<FormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [showIsbnScanner, setShowIsbnScanner] = useState(false);
   const [showRetailScanner, setShowRetailScanner] = useState(false);
+  const [queueCount, setQueueCount] = useState(0);
+  const netInfo = useNetInfo();
+  // const [hasPermission, setHasPermission] = useState(null);
   // const [scannedData, setScannedData] = useState<Record<string, any> | null>(null);
 
   const { 
@@ -42,9 +48,79 @@ export default function Scan() {
     }, 
   })
 
+  useEffect(() => {
+    const processQueue = async () => {
+      if (netInfo.isConnected && netInfo.isInternetReachable) {
+        try {
+          const queue = await getSubmissionQueue();
+          if (queue.length > 0) {
+            setIsRetrying(true);
+            await processSubmissionQueue(queue);
+          }
+        } catch (err) {
+          console.error('Error processing queue:', err);
+        } finally {
+          setIsRetrying(false);
+        }
+      }
+    }
+
+    const updateQueueCount = async () => {
+      const queue = await getSubmissionQueue();
+      setQueueCount(queue.length);
+    }
+
+    updateQueueCount();
+    processQueue();
+  }, [netInfo.isConnected, netInfo.isInternetReachable]);
+
+  const getSubmissionQueue = async (): Promise<FormValues[]> => {
+    try {
+      const queue =await AsyncStorage.getItem(SUBMISSION_QUEUE_KEY);
+      return queue ? JSON.parse(queue) : [];
+    } catch (err) {
+      console.error('Error getting submission queue:', err);
+      return [];
+    }
+  };
+
+  const processSubmissionQueue = async (queue: FormValues[]) => {
+    const successfulSubmissions: FormValues[] = [];
+    const failedSubmissions: FormValues[] = [];
+
+    for (const submission of queue) {
+      try {
+        await addFood(submission);
+        successfulSubmissions.push(submission);
+      } catch(err) {
+        console.error('Failed to submit queued item:', err);
+        failedSubmissions.push(submission);
+      }
+    }
+
+    await AsyncStorage.setItem(
+      SUBMISSION_QUEUE_KEY,
+      JSON.stringify(failedSubmissions)
+    );
+
+    if (successfulSubmissions.length > 0) {
+      Alert.alert(
+        'Success',
+        `Submitted ${successfulSubmissions.length} saved item(s)!`
+      );
+    }
+  };
+
   const onSubmit = async (data: FormValues): Promise<boolean> => {
     try {
       setSubmitError(null);
+
+      if (!netInfo.isConnected || !netInfo.isInternetReachable) {
+        await addToSubmissionQueue(data);
+        setSubmitError('Offline - Data saved. Will submit when online.');
+        return false;
+      }
+
       const result = await addFood(data);
       console.log(`(scan.tsx Line 47): ${JSON.stringify(result)}`);
       reset();
@@ -61,8 +137,23 @@ export default function Scan() {
     }
   }
 
+  const addToSubmissionQueue = async (data: FormValues) => {
+    try {
+      const queue = await getSubmissionQueue();
+      queue.push(data);
+      await AsyncStorage.setItem(
+        SUBMISSION_QUEUE_KEY,
+        JSON.stringify(queue)
+      )
+      setCachedSubmission(data);
+    } catch (err) {
+      console.error('Error saving to submission queue:', err);
+    }
+  };
+
   const retrySubmission = async () => {
     if (!cachedSubmission) return;
+
     setIsRetrying(true);
     try {
       const success = await onSubmit(cachedSubmission);
