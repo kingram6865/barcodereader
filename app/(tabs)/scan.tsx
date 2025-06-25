@@ -3,9 +3,12 @@ import InputFormRetail, { FormValues } from "@/components/InputFormRetail";
 import { CameraView } from "expo-camera";
 import { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Scan() {
+  const [cachedSubmission, setCachedSubmission] = useState<FormValues | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [showIsbnScanner, setShowIsbnScanner] = useState(false);
@@ -39,18 +42,37 @@ export default function Scan() {
     }, 
   })
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormValues): Promise<boolean> => {
     try {
+      setSubmitError(null);
       const result = await addFood(data);
       console.log(`(scan.tsx Line 47): ${JSON.stringify(result)}`);
       reset();
       setScanned(false);
+      setCachedSubmission(null);
+      return true;
     } catch (err) {
       console.error('Submission failed:', err);
-      alert('Failed to submit data. Please try again.');
+      setCachedSubmission(data);
+      setSubmitError('Failed to submit data. Data saved for retry.');
+      // alert('Failed to submit data. Data saved for retry.');
+      // alert('Failed to submit data. Please try again.');
+      return false;
     }
   }
 
+  const retrySubmission = async () => {
+    if (!cachedSubmission) return;
+    setIsRetrying(true);
+    try {
+      const success = await onSubmit(cachedSubmission);
+      if (success) {
+        Alert.alert('Success', 'Your data was successfully submitted!');
+      }
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   const handleIsbnScanned = async ({ type, data }: {type: string, data: string}) => {
     const bookTypes = ['32', '512']
@@ -96,6 +118,21 @@ export default function Scan() {
       <Text style={styles.text}>Scan Info</Text>
       <View style={styles.formContainer}>
         <InputFormRetail control={control} errors={errors} />
+        {submitError && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{submitError}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={retrySubmission}
+              disabled={isRetrying}
+            >
+              <Text style={styles.retryText}>
+                {isRetrying ? 'Sending...' : 'Retry Submission'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <TouchableOpacity style={styles.fab2} onPress={() => {setShowRetailScanner(true); setScanned(false)} }>
           <Text style={styles.fabIcon}>Retail</Text>
         </TouchableOpacity>      
@@ -147,4 +184,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'blue',
   },
+  errorContainer: {
+    backgroundColor: '#ffeeee',
+    padding: 15,
+    margin: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffcccc'
+  },
+  errorText: {
+    color: '#cc0000',
+    marginBottom: 10
+  },
+  retryButton: {
+    backgroundColor: '#03A9F4',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center'
+  },
+  retryText: {
+    color: 'white',
+    fontWeight: 'bold'
+  }
 });
